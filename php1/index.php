@@ -28,6 +28,8 @@
 
     //----------- logic ---------------
 
+    checkFileExistence();
+
     // if the clock-in button was pressed
     if (isset($_POST[SUBMIT_BTN_NAME])) 
     {
@@ -62,7 +64,7 @@
     function appendLog($isLate) 
     {
         $file = fopen("log.txt", "a+");
-        fwrite($file, date("d.m.Y, H:i"));
+        fwrite($file, date("d.m.Y, H:i:s"));
 
         if ($isLate)
         {
@@ -108,4 +110,13 @@
 
     }
 
+    function checkFileExistence() {
+        
+        if (!file_exists("log.txt")) 
+        {    
+            // this creates a file if it doesnt exists
+            $file = fopen("log.txt", "w");
+            fclose($file);  
+        }
+    }
 ?>

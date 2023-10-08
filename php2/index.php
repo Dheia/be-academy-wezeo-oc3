@@ -8,10 +8,10 @@
     <form method="post" action="index.php">
         
         <label for="name_input_field">Name: </label>
-        <input type="text" name="name_field" id="name_input_field">
+        <input type="text" name="name_field" id="name_input_field" pattern="[A-Za-z0-9 ]{1,}" title="At least 1 character" required="required">
         <br><br>
         <label for="msg_field">Message: </label>
-        <input type="text" name="msg_field" id="msg_field">
+        <input type="text" name="msg_field" id="msg_field" pattern="[a-z]*[A-Z]*[\ .]*" title="Only letters, numbers, spaces and dots">
 
         <br><br>        
         <input type="submit" value="submit" name="clockin">
@@ -30,7 +30,6 @@
     define("SUBMIT_BTN_NAME", "clockin");
     define("NAME_FIELD_NAME", "name_field");
     define("MESSAGE_FIELD_NAME", "msg_field");
-
     $STUDENT_LOG_FILE = "studenti.json";
 
     // up to what time is the clock-in not considered being late
@@ -43,7 +42,7 @@
 
     //----------- logic ---------------
 
-    checkFileExistence($STUDENT_LOG_FILE);
+    checkStudentLog();
 
     // if the clock-in button was pressed
     if (isset($_POST[SUBMIT_BTN_NAME])) 
@@ -59,69 +58,53 @@
         $clockinMinutes = ($hours * 60) + $minutes;
         $isLate = $clockinMinutes > ($MAX_HRS * 60 + $MAX_MINUTES);
         
-        checkFileExistence($STUDENT_LOG_FILE);
+        checkStudentLog();
 
-        StudentLogger::appendLog($STUDENT_LOG_FILE);
+        StudentLogger::appendLog($STUDENT_LOG_FILE, $_POST[NAME_FIELD_NAME], $_POST[MESSAGE_FIELD_NAME]);
+    }
+    // if the name was sent as part of the url (?meno=john)
+    else if (isset($_GET["meno"])) 
+    {
+        StudentLogger::appendLog($STUDENT_LOG_FILE, $_GET["meno"], "");
     }
 
     printLogs();
 
     //-------------- classes ---------------
 
-    /*class StudentLog 
-    {
-        public $totalClockins;
-        public $students;
-    }
-    class Student 
-    {
-        public $name;
-        public $clockinCount;
-        public $clockins; // array of all clockins
-    }
-    class Clockin 
-    {
-        public $dateAndTime;
-        public $message;
-    }*/
     class StudentLogger 
     {
 
-        public static function appendLog($filename, $method="post") {
+        public static function appendLog($filename, $name, $message) {
             
-            $name = "";
-            if ($method == "post") { $name = $_POST[NAME_FIELD_NAME]; }
-            else if ($method == "get") { $name = $_GET["meno"]; }
+            global $STUDENT_LOG_FILE;
 
-            // read the file, decode it into a class, add an entry,
+            // read the file, decode it into an associative array, add an entry,
             // and then overwrite the file with this new content
             // (TODO: find a less wasteful way to do this)
 
             $jsonStr = file_get_contents($filename);
-            echo $jsonStr . "<br>";
-            $studentLog = json_decode($jsonStr, true); 
-            var_dump($studentLog);
-            echo $studentLog . "<br>"; // LEFT OFF 4.10: TOTO NEVYPISE - CHYBA PRI DEKODOVANI
-            echo $name . "<br>";
-
+            $studentLogArr = json_decode($jsonStr, true); 
+            
             // the studentLog is an associative array with
             // the keys being names of students, where each key
             // maps to a string that contains every 
             // arrival date+time and message of that student
 
-            if (key_exists($name, $studentLog))
+            if (key_exists($name, $studentLogArr))
             {
-                $str = $studentLog[$name];
-                $str = $str . "\n" . date("d.m.Y, H:i:s") . "\n" . $_POST[MESSAGE_FIELD_NAME];
+                $str = $studentLogArr[$name];
+                $str = $str . date("d.m.Y-H:i:s:") . $message . "_";
+                $studentLogArr[$name] = $str;
             }
             else
             {
-                $studentLog[$name] = date("d.m.Y, H:i:s") . "\n" . $_POST[MESSAGE_FIELD_NAME];
+                $studentLogArr[$name] = date("d.m.Y-H:i:s:") . $message . "_";
             }
-            
-            unset($_POST[NAME_FIELD_NAME]);
-            unset($_POST[MESSAGE_FIELD_NAME]);
-            unset($_GET["meno"]);
+
+            $newJsonStr = json_encode($studentLogArr);
+
+            file_put_contents($STUDENT_LOG_FILE, $newJsonStr);
 
         }
 
@@ -129,12 +112,10 @@
 
     function printLogs() 
     {
-        $file = fopen("log.txt", "r");
-        while (!feof($file)) 
-        {
-            echo fgets($file) . "<br>";
-        }
-        fclose($file);
+        global $STUDENT_LOG_FILE;
+        $jsonStr = file_get_contents($STUDENT_LOG_FILE);
+        $studentLogArr = json_decode($jsonStr, true); 
+        print_r($studentLogArr);
     }
 
     
@@ -173,13 +154,16 @@
 
     }
 
-    function checkFileExistence($filename) {
+    function checkStudentLog() {
 
-        if (!file_exists($filename)) 
+        global $STUDENT_LOG_FILE;
+
+        if (!file_exists($STUDENT_LOG_FILE)) 
         {    
             // this creates a file if it doesnt exists
-            $file = fopen($filename, "w");
+            $file = fopen($STUDENT_LOG_FILE, "w");
             fclose($file);  
+            file_put_contents($STUDENT_LOG_FILE, "{}");
         }
     }
-?>
+?>  

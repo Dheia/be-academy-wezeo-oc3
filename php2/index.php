@@ -1,22 +1,30 @@
 
+<style>
+    .records { grid-area: records; }
+    .print_r { grid-area: print_r; }
+    .arrivals { grid-area: arrivals; }
+
+    .grid-container {
+        display: grid;
+        grid-template-areas:
+            'records print_r'
+            'records arrivals';
+        gap: 30px;
+        padding: 10px;
+        }
+</style>
 <html>
 <body>
 
-    <h1>Logger</h1>
-    <br>
+    <h1>Logger 2</h1>
 
     <form method="post" action="index.php">
         
         <label for="name_input_field">Name: </label>
         <input type="text" name="name_field" id="name_input_field" pattern="[A-Za-z0-9 ]{1,}" title="At least 1 character" required="required">
-        <br><br>
-        <label for="msg_field">Message: </label>
+        <label for="msg_field">   Message: </label>
         <input type="text" name="msg_field" id="msg_field" pattern="[a-z]*[A-Z]*[\ .]*" title="Only letters, numbers, spaces and dots">
-
-        <br><br>        
         <input type="submit" value="submit" name="clockin">
-
-        <!-- TODO: add malicious string checking and inability to add a newline-->
 
     </form>
 
@@ -31,44 +39,49 @@
     define("NAME_FIELD_NAME", "name_field");
     define("MESSAGE_FIELD_NAME", "msg_field");
     $STUDENT_LOG_FILE = "studenti.json";
+    $ARRIVALS_FILE = "prichody.json";
 
     // up to what time is the clock-in not considered being late
     $MAX_HRS = 8;
     $MAX_MINUTES = 00;
 
     // between what hours can the clock-in not be accepted (so the website dies)
-    $DIE_MIN_HRS = 23;
+    $DIE_MIN_HRS = 00;
     $DIE_MAX_HRS = 5; 
 
     //----------- logic ---------------
 
-    checkStudentLog();
+    checkJsonFile($STUDENT_LOG_FILE, "{}"); // studenti.json
+    checkJsonFile($ARRIVALS_FILE, "[]"); // prichody.json
 
-    // if the clock-in button was pressed
-    if (isset($_POST[SUBMIT_BTN_NAME])) 
+    $arrivalsLogger = new ArrivalsLogger($ARRIVALS_FILE);
+
+    // if the website wasnt loaded for the first time
+    if (isset($_POST[SUBMIT_BTN_NAME]) or isset($_GET["meno"])) 
     {
-        $hours = intval(date("H"));
-        $minutes = intval(date("i"));
 
-        if (!isClockinPossible($hours))
+        // if the clock-in button was pressed
+        if (isset($_POST[SUBMIT_BTN_NAME])) 
         {
-            die("Cant clock in between " . $DIE_MIN_HRS . " and " . $DIE_MAX_HRS);
+            $hours = intval(date("H"));
+            if (!isClockinPossible($hours))
+            {
+                die("Cant clock in between " . $DIE_MIN_HRS . " and " . $DIE_MAX_HRS);
+            }
+
+            StudentLogger::appendLog($STUDENT_LOG_FILE, $_POST[NAME_FIELD_NAME], $_POST[MESSAGE_FIELD_NAME]);
+        }
+        // if the name was sent as part of the url (?meno=john)
+        else if (isset($_GET["meno"])) 
+        {
+            StudentLogger::appendLog($STUDENT_LOG_FILE, $_GET["meno"], "");
         }
 
-        $clockinMinutes = ($hours * 60) + $minutes;
-        $isLate = $clockinMinutes > ($MAX_HRS * 60 + $MAX_MINUTES);
-        
-        checkStudentLog();
+        $arrivalsLogger -> appendArrival();
+        $arrivalsLogger -> tagLateClockins($MAX_HRS, $MAX_MINUTES);
 
-        StudentLogger::appendLog($STUDENT_LOG_FILE, $_POST[NAME_FIELD_NAME], $_POST[MESSAGE_FIELD_NAME]);
     }
-    // if the name was sent as part of the url (?meno=john)
-    else if (isset($_GET["meno"])) 
-    {
-        StudentLogger::appendLog($STUDENT_LOG_FILE, $_GET["meno"], "");
-    }
-
-    printLogs();
+    printLogs($arrivalsLogger);
 
     //-------------- classes ---------------
 
@@ -78,10 +91,6 @@
         public static function appendLog($filename, $name, $message) {
             
             global $STUDENT_LOG_FILE;
-
-            // read the file, decode it into an associative array, add an entry,
-            // and then overwrite the file with this new content
-            // (TODO: find a less wasteful way to do this)
 
             $jsonStr = file_get_contents($filename);
             $studentLogArr = json_decode($jsonStr, true); 
@@ -94,12 +103,18 @@
             if (key_exists($name, $studentLogArr))
             {
                 $str = $studentLogArr[$name];
-                $str = $str . date("d.m.Y-H:i:s:") . $message . "_";
+
+                $clockinCount = StudentLogger::getClockinCount($str);
+                $clockinCount++;
+                $digitCount = strlen((string)$clockinCount);
+                $str = substr($str, $digitCount);
+
+                $str = $clockinCount . $str . date("d.m.Y-H:i:s: ") . $message . "_";
                 $studentLogArr[$name] = $str;
             }
             else
             {
-                $studentLogArr[$name] = date("d.m.Y-H:i:s:") . $message . "_";
+                $studentLogArr[$name] = "1 " . date("d.m.Y-H:i:s: ") . $message . "_";
             }
 
             $newJsonStr = json_encode($studentLogArr);
@@ -108,17 +123,134 @@
 
         }
 
+        public static function getClockinCount($log) 
+        {
+            // the clockin count for the given log (a single value in the associative array)
+            // is at the start of the string and is separated from the rest of the log
+            // by a space.
+
+            $digitCount = iconv_strpos($log, " ");
+            $clockinCount = intval(substr($log, 0, $digitCount));
+            return $clockinCount;
+        }
+
+        public static function chopLog($log) 
+        {
+            // returns an array containing every clockin time&date + message for
+            // the given log (a single value in the associative array) 
+
+            // first remove the clockin count at the beginning
+            $digitCount = strlen((string)StudentLogger::getClockinCount($log));
+            
+            $truncated = substr($log, $digitCount+1);
+
+            $arr = explode("_", $truncated);
+            array_pop($arr); // last element is empty
+
+            return $arr;
+        }
+
     }
 
-    function printLogs() 
+    class ArrivalsLogger
+    {
+        private $arrivalsFile;
+
+        public function __construct($arrivalsFile) {
+            $this->arrivalsFile = $arrivalsFile;
+        }
+
+        public function appendArrival() {
+            $jsonStr = file_get_contents($this -> arrivalsFile);
+            $arrivalsArr = json_decode($jsonStr, false); 
+            
+            array_push($arrivalsArr, date("d.m.Y-H:i:s"));
+
+            $newJsonStr = json_encode($arrivalsArr);
+            file_put_contents($this->arrivalsFile, $newJsonStr);
+        }
+
+        public function tagLateClockins($max_hrs, $max_mins) {
+            $jsonStr = file_get_contents($this -> arrivalsFile);
+            $arrivalsArr = json_decode($jsonStr, false); 
+            
+            foreach ($arrivalsArr as &$arrival) 
+            {
+                $isLate = $this -> isLate($arrival, $max_hrs, $max_mins);
+                if ($isLate and !str_contains($arrival, "meskanie")) 
+                {
+                    $arrival = $arrival . " meskanie";
+                }
+            }
+
+            $newJsonStr = json_encode($arrivalsArr);
+            file_put_contents($this->arrivalsFile, $newJsonStr);
+        }
+
+        private function isLate($dateTimeStr, $max_hrs, $max_mins) {
+            
+            // the hours and minutes are at indices 11 and 14 in the string
+            $hours = intval(substr($dateTimeStr, 11, 2));
+            $minutes = intval(substr($dateTimeStr, 14, 2));
+
+            $clockinMinutes = ($hours * 60) + $minutes;
+            $isLate = $clockinMinutes > ($max_hrs * 60 + $max_mins);
+            return $isLate;
+        }
+
+        public function printLogs() {
+            $jsonStr = file_get_contents($this -> arrivalsFile);
+            $arrivalsArr = json_decode($jsonStr, false); 
+
+            echo print_r($arrivalsArr);
+        }
+
+    }
+
+    function printLogs($arrivalsInstance) 
     {
         global $STUDENT_LOG_FILE;
         $jsonStr = file_get_contents($STUDENT_LOG_FILE);
         $studentLogArr = json_decode($jsonStr, true); 
-        print_r($studentLogArr);
+
+
+        echo "<div class=\"grid-container\">";
+        
+        echo "<ul class=\"records\">";
+        foreach ($studentLogArr as $name => $log) {
+            
+            $clockins = StudentLogger::chopLog($log);
+            
+            echo "<li style=\"margin: 5px; background: whitesmoke;\">";
+            echo "<b>" . $name . "</b> - " . StudentLogger::getClockinCount($log) . " arrivals"; 
+            echo "<ul>";
+            
+            // nested list of every individual clockin
+            foreach ($clockins as $clockin) 
+            {
+                echo "<li>";
+                echo $clockin;
+                echo "</li>";
+            }
+
+            echo "</ul>";
+            echo "</li>";
+        }
+        echo "</ul>";
+
+        echo "<div class=\"print_r\">";
+        echo "<h2>print_r(studenti.json):</h2>";
+        echo print_r($studentLogArr);
+        echo "</div>";
+
+        echo "<div class=\"arrivals\">";
+        echo "<h2>print_r(prichody.json):</h2>";
+        $arrivalsInstance -> printLogs();
+        echo "</div>";
+
+        echo "</div>";
     }
 
-    
     function isClockinPossible($clockinHour) {
         global $DIE_MIN_HRS;
         global $DIE_MAX_HRS;
@@ -154,16 +286,15 @@
 
     }
 
-    function checkStudentLog() {
+    function checkJsonFile($name, $emptyString) {
 
-        global $STUDENT_LOG_FILE;
-
-        if (!file_exists($STUDENT_LOG_FILE)) 
+        if (!file_exists($name)) 
         {    
             // this creates a file if it doesnt exists
-            $file = fopen($STUDENT_LOG_FILE, "w");
+            $file = fopen($name, "w");
             fclose($file);  
-            file_put_contents($STUDENT_LOG_FILE, "{}");
+            file_put_contents($name, $emptyString);
         }
     }
+
 ?>  

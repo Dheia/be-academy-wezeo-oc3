@@ -33,35 +33,18 @@
 
 <?php
 
-    //---------- constants -----------
-
-    define("SUBMIT_BTN_NAME", "clockin");
-    define("NAME_FIELD_NAME", "name_field");
-    define("MESSAGE_FIELD_NAME", "msg_field");
-    $STUDENT_LOG_FILE = "studenti.json";
-    $ARRIVALS_FILE = "prichody.json";
-
-    // up to what time is the clock-in not considered being late
-    $MAX_HRS = 8;
-    $MAX_MINUTES = 00;
-
-    // between what hours can the clock-in not be accepted (so the website dies)
-    $DIE_MIN_HRS = 00;
-    $DIE_MAX_HRS = 5; 
-
     //----------- logic ---------------
 
-    checkJsonFile($STUDENT_LOG_FILE, "{}"); // studenti.json
-    checkJsonFile($ARRIVALS_FILE, "[]"); // prichody.json
+    checkJsonFile(Cst::$STUDENT_LOG_FILE, "{}"); // studenti.json
+    checkJsonFile(Cst::$ARRIVALS_FILE, "[]"); // prichody.json
 
-    $arrivalsLogger = new ArrivalsLogger($ARRIVALS_FILE);
+    $arrivalsLogger = new ArrivalsLogger(Cst::$ARRIVALS_FILE);
 
     // if the website wasnt loaded for the first time
-    if (isset($_POST[SUBMIT_BTN_NAME]) or isset($_GET["meno"])) 
+    if (isset($_POST[Cst::$SUBMIT_BTN_NAME]) or isset($_GET["meno"])) 
     {
-
         // if the clock-in button was pressed
-        if (isset($_POST[SUBMIT_BTN_NAME])) 
+        if (isset($_POST[Cst::$SUBMIT_BTN_NAME])) 
         {
             $hours = intval(date("H"));
             if (!isClockinPossible($hours))
@@ -69,28 +52,26 @@
                 die("Cant clock in between " . $DIE_MIN_HRS . " and " . $DIE_MAX_HRS);
             }
 
-            StudentLogger::appendLog($STUDENT_LOG_FILE, $_POST[NAME_FIELD_NAME], $_POST[MESSAGE_FIELD_NAME]);
+            StudentLogger::appendLog(Cst::$STUDENT_LOG_FILE, $_POST[Cst::$NAME_FIELD_NAME], $_POST[Cst::$MESSAGE_FIELD_NAME]);
         }
         // if the name was sent as part of the url (?meno=john)
         else if (isset($_GET["meno"])) 
         {
-            StudentLogger::appendLog($STUDENT_LOG_FILE, $_GET["meno"], "");
+            StudentLogger::appendLog(Cst::$STUDENT_LOG_FILE, $_GET["meno"], "");
         }
 
         $arrivalsLogger -> appendArrival();
-        $arrivalsLogger -> tagLateClockins($MAX_HRS, $MAX_MINUTES);
+        $arrivalsLogger -> tagLateClockins(Cst::$MAX_HRS, Cst::$MAX_MINUTES);
 
     }
     printLogs($arrivalsLogger);
 
-    //-------------- classes ---------------
+    //-------------- classes and functions ---------------
 
     class StudentLogger 
     {
 
         public static function appendLog($filename, $name, $message) {
-            
-            global $STUDENT_LOG_FILE;
 
             $jsonStr = file_get_contents($filename);
             $studentLogArr = json_decode($jsonStr, true); 
@@ -119,7 +100,7 @@
 
             $newJsonStr = json_encode($studentLogArr);
 
-            file_put_contents($STUDENT_LOG_FILE, $newJsonStr);
+            file_put_contents(Cst::$STUDENT_LOG_FILE, $newJsonStr);
 
         }
 
@@ -207,10 +188,28 @@
 
     }
 
+    class Cst {
+
+        public static $SUBMIT_BTN_NAME = "clockin";
+        public static $NAME_FIELD_NAME = "name_field";
+        public static $MESSAGE_FIELD_NAME = "msg_field";
+        public static $STUDENT_LOG_FILE = "studenti.json";
+        public static $ARRIVALS_FILE = "prichody.json";
+    
+        // up to what time is the clock-in not considered being late
+        public static $MAX_HRS = 8;
+        public static $MAX_MINUTES = 00;
+    
+        // between what hours can the clock-in not be accepted (so the website dies)
+        public static $DIE_MIN_HRS = 00;
+        public static $DIE_MAX_HRS = 5; 
+
+    }
+
     function printLogs($arrivalsInstance) 
     {
         global $STUDENT_LOG_FILE;
-        $jsonStr = file_get_contents($STUDENT_LOG_FILE);
+        $jsonStr = file_get_contents(Cst::$STUDENT_LOG_FILE);
         $studentLogArr = json_decode($jsonStr, true); 
 
 
@@ -296,5 +295,4 @@
             file_put_contents($name, $emptyString);
         }
     }
-
 ?>  

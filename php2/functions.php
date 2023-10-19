@@ -3,13 +3,11 @@
 
 function isClockinPossible($clockinHour)
 {
-    global $DIE_MIN_HRS;
-    global $DIE_MAX_HRS;
 
     // if the range does not cross midnight, so for example 18 - 22:00
-    if ($DIE_MAX_HRS >= $DIE_MIN_HRS) 
+    if (Cst::DIE_MAX_HRS >= Cst::DIE_MIN_HRS) 
     {
-        if ($DIE_MIN_HRS <= $clockinHour and $clockinHour <= $DIE_MAX_HRS) 
+        if (Cst::DIE_MIN_HRS <= $clockinHour and $clockinHour <= Cst::DIE_MAX_HRS) 
         {
             return false;
         }
@@ -24,11 +22,11 @@ function isClockinPossible($clockinHour)
         // -midnight til max_hour
         // and then, we check the clockin hour in the appropriate interval
 
-        if ($DIE_MIN_HRS <= $clockinHour) 
+        if (Cst::DIE_MIN_HRS <= $clockinHour) 
         {
             return false;
         }
-        else if (0 <= $clockinHour and $clockinHour <= $DIE_MAX_HRS)
+        else if (0 <= $clockinHour and $clockinHour <= Cst::DIE_MAX_HRS)
         {
             return false;
         }
@@ -42,7 +40,7 @@ function dieOnBadClockin()
     $hours = intval(date("H"));
     if (!isClockinPossible($hours))
     {
-        die("Cant clock in between " . Cst::$DIE_MIN_HRS . " and " . Cst::$DIE_MAX_HRS);
+        die("Cant clock in between " . Cst::DIE_MIN_HRS . " and " . Cst::DIE_MAX_HRS);
     }
 } 
 
@@ -60,7 +58,7 @@ function checkJsonFile($name, $emptyString)
 
 function displayLogs($arrivalsInstance) 
 {
-    $jsonStr = file_get_contents(Cst::$STUDENT_LOG_FILE);
+    $jsonStr = file_get_contents(Cst::STUDENT_LOG_FILE);
     $studentLogArr = json_decode($jsonStr, true); 
 
     echo "<div class=\"grid-container\">";

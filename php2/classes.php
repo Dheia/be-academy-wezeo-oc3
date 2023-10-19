@@ -5,19 +5,18 @@
 class Cst 
 {
 
-    public static $SUBMIT_BTN_NAME = "clockin";
-    public static $NAME_FIELD_NAME = "name_field";
-    public static $MESSAGE_FIELD_NAME = "msg_field";
-    public static $STUDENT_LOG_FILE = "studenti.json";
-    public static $ARRIVALS_FILE = "prichody.json";
+    public const SUBMIT_BTN_NAME = "clockin";
+    public const NAME_FIELD_NAME = "name_field";
+    public const MESSAGE_FIELD_NAME = "msg_field";
+    public const STUDENT_LOG_FILE = "studenti.json";
+    public const ARRIVALS_FILE = "prichody.json";
 
     // up to what time is the clock-in not considered being late
-    public static $MAX_HRS = 8;
-    public static $MAX_MINUTES = 00;
-
+    public const MAX_HRS = 8;
+   public const MAX_MINUTES = 00;
     // between what hours can the clock-in not be accepted (so the website dies)
-    public static $DIE_MIN_HRS = 00;
-    public static $DIE_MAX_HRS = 5; 
+    public const DIE_MIN_HRS = 1;
+    public const DIE_MAX_HRS = 5; 
 
 }
 
@@ -53,7 +52,7 @@ class StudentLogger
 
         $newJsonStr = json_encode($studentLogArr);
 
-        file_put_contents(Cst::$STUDENT_LOG_FILE, $newJsonStr);
+        file_put_contents(Cst::STUDENT_LOG_FILE, $newJsonStr);
 
     }
 
@@ -123,11 +122,8 @@ class ArrivalsLogger
 
     private function isLate($dateTimeStr, $max_hrs, $max_mins) {
         
-        // the hours and minutes are at indices 11 and 14 in the string
-        $hours = intval(substr($dateTimeStr, 11, 2));
-        $minutes = intval(substr($dateTimeStr, 14, 2));
-
-        $clockinMinutes = ($hours * 60) + $minutes;
+        $clockinMinutes = (strtotime("now") - strtotime("today")) / 60;
+        $clockinMinutes *= 0.6;
         $isLate = $clockinMinutes > ($max_hrs * 60 + $max_mins);
         return $isLate;
     }

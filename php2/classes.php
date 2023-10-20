@@ -19,67 +19,66 @@ class Cst
 
 }
 
+class Clockin
+{
+    public $time;
+    public $date;
+    public $message;
+
+    public function __construct($time, $date, $message) {
+        $this->time = $time;
+        $this->date = $date;
+        $this->message = $message;
+    }
+}
+
+// represents a single student's clockins.
+// Note that this class contains no $name, therefore by just looking at
+// this object, one doesnt know to which student it belongs.
+// The reason for that is:
+// All StudentLog instances are stored in an associative array, and the
+// keys of that array are all unique student names.
+class StudentLog
+{
+    public $clockinCount;
+    public $clockinArr; 
+
+    public function __construct($name, $firstClockin) {
+        $this->clockinCount = 0;
+        $this->clockinArr = array($firstClockin);
+    }
+}
+
 class StudentLogger 
 {
 
     public static function appendLog($filename, $name, $message) {
 
+        // the student log file contains an associative array,
+        // where every element key is a unique student name
+        // and every corresponding value a StudentLog object
         $jsonStr = file_get_contents($filename);
         $studentLogArr = json_decode($jsonStr, true); 
-        
-        // the studentLog is an associative array with
-        // the keys being names of students, where each key
-        // maps to a string that contains every 
-        // arrival date+time and message of that student
 
+        $newClockin = new Clockin(date("H:i:s"), date("d.m.Y"), $message);
+
+        // if a student with the given name already exists, append a log 
+        // to their clockins array
         if (key_exists($name, $studentLogArr))
         {
-            $str = $studentLogArr[$name];
-
-            $clockinCount = StudentLogger::getClockinCount($str);
-            $clockinCount++;
-            $digitCount = strlen((string)$clockinCount);
-            $str = substr($str, $digitCount);
-
-            $str = $clockinCount . $str . date("d.m.Y-H:i:s: ") . $message . "_";
-            $studentLogArr[$name] = $str;
+            $studentLog = $studentLogArr[$name];
+            $studentLog -> clockinCount++;
+            array_push($studentLog->clockinArr, $newClockin);
         }
+        // if a student with this name doesnt exist, create them
         else
         {
-            $studentLogArr[$name] = "1 " . date("d.m.Y-H:i:s: ") . $message . "_";
+            $newStudentLog = new StudentLog($name, $newClockin);
+            $studentLogArr[$name] = $newStudentLog;
         }
 
         $newJsonStr = json_encode($studentLogArr);
-
         file_put_contents(Cst::STUDENT_LOG_FILE, $newJsonStr);
-
-    }
-
-    public static function getClockinCount($log) 
-    {
-        // the clockin count for the given log (a single value in the associative array)
-        // is at the start of the string and is separated from the rest of the log
-        // by a space.
-
-        $digitCount = iconv_strpos($log, " ");
-        $clockinCount = intval(substr($log, 0, $digitCount));
-        return $clockinCount;
-    }
-
-    public static function chopLog($log) 
-    {
-        // returns an array containing every clockin time&date + message for
-        // the given log (a single value in the associative array) 
-
-        // first remove the clockin count at the beginning
-        $digitCount = strlen((string)StudentLogger::getClockinCount($log));
-        
-        $truncated = substr($log, $digitCount+1);
-
-        $arr = explode("_", $truncated);
-        array_pop($arr); // last element is empty
-
-        return $arr;
     }
 
 }
@@ -94,7 +93,7 @@ class ArrivalsLogger
 
     public function appendArrival() {
         $jsonStr = file_get_contents($this -> arrivalsFile);
-        $arrivalsArr = json_decode($jsonStr, false); 
+        $arrivalsArr = json_decode($jsonStr); 
         
         array_push($arrivalsArr, date("d.m.Y H:i:s"));
 
@@ -104,7 +103,7 @@ class ArrivalsLogger
 
     public function tagLateClockins($max_hrs, $max_mins) {
         $jsonStr = file_get_contents($this -> arrivalsFile);
-        $arrivalsArr = json_decode($jsonStr, false); 
+        $arrivalsArr = json_decode($jsonStr); 
         
         foreach ($arrivalsArr as &$arrival) 
         {

@@ -61,22 +61,22 @@ function displayLogs($arrivalsInstance)
     $jsonStr = file_get_contents(Cst::STUDENT_LOG_FILE);
     $studentLogArr = json_decode($jsonStr, true); 
 
+    
+
     echo "<div class=\"grid-container\">";
     
     echo "<ul class=\"records\">";
     foreach ($studentLogArr as $name => $log) {
         
-        $clockins = StudentLogger::chopLog($log);
-        
         echo "<li style=\"margin: 5px; background: whitesmoke;\">";
-        echo "<b>" . $name . "</b> - " . StudentLogger::getClockinCount($log) . " arrivals"; 
+        echo "<b>" . $name . "</b> - " . $log -> clockinCount . " arrivals"; 
         echo "<ul>";
         
         // nested list of every individual clockin
-        foreach ($clockins as $clockin) 
+        foreach ($log->clockins as $clockin) 
         {
             echo "<li>";
-            echo $clockin;
+            echo $clockin->date . " " . $clockin->time . " " . $clockin->message;
             echo "</li>";
         }
 

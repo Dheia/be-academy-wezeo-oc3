@@ -4,7 +4,6 @@
 // contains various constants used throughout code
 class Cst 
 {
-
     public const SUBMIT_BTN_NAME = "clockin";
     public const NAME_FIELD_NAME = "name_field";
     public const MESSAGE_FIELD_NAME = "msg_field";
@@ -97,7 +96,7 @@ class ArrivalsLogger
         $jsonStr = file_get_contents($this -> arrivalsFile);
         $arrivalsArr = json_decode($jsonStr, false); 
         
-        array_push($arrivalsArr, date("d.m.Y-H:i:s"));
+        array_push($arrivalsArr, date("d.m.Y H:i:s"));
 
         $newJsonStr = json_encode($arrivalsArr);
         file_put_contents($this->arrivalsFile, $newJsonStr);
@@ -109,8 +108,14 @@ class ArrivalsLogger
         
         foreach ($arrivalsArr as &$arrival) 
         {
+            if (str_contains($arrival, "meskanie")) 
+            {
+                continue;
+            }
+            
+            // every arrival is in the format "DD.MM.YYYY HH:MM:SS"
             $isLate = $this -> isLate($arrival, $max_hrs, $max_mins);
-            if ($isLate and !str_contains($arrival, "meskanie")) 
+            if ($isLate) 
             {
                 $arrival = $arrival . " meskanie";
             }
@@ -122,8 +127,11 @@ class ArrivalsLogger
 
     private function isLate($dateTimeStr, $max_hrs, $max_mins) {
         
-        $clockinMinutes = (strtotime("now") - strtotime("today")) / 60;
-        $clockinMinutes *= 0.6;
+        $timestamp = strtotime($dateTimeStr); 
+        $hours = (int) date("H", $timestamp); 
+        $minutes = (int) date("i", $timestamp); 
+
+        $clockinMinutes = $hours * 60 + $minutes;
         $isLate = $clockinMinutes > ($max_hrs * 60 + $max_mins);
         return $isLate;
     }

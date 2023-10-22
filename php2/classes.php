@@ -44,7 +44,7 @@ class StudentLog
     public $clockinArr; 
 
     public function __construct($name, $firstClockin) {
-        $this->clockinCount = 0;
+        $this->clockinCount = 1;
         $this->clockinArr = array($firstClockin);
     }
 }
@@ -60,6 +60,11 @@ class StudentLogger
         $jsonStr = file_get_contents($filename);
         $studentLogArr = json_decode($jsonStr, true); 
 
+        // the problem now is, that studentLogArr isnt an associative array
+        // filled with objects. Rather, it is filled with associative arrays.
+        // This is a quirk of json_decode, as unfortunately, objects
+        // and associative arrays are represented in the exact same way in json.
+
         $newClockin = new Clockin(date("H:i:s"), date("d.m.Y"), $message);
 
         // if a student with the given name already exists, append a log 
@@ -67,8 +72,13 @@ class StudentLogger
         if (key_exists($name, $studentLogArr))
         {
             $studentLog = $studentLogArr[$name];
+
+            // studentLog is an associative array, lets convert it into an object
+            $studentLog = assocArrayToObject($studentLog);
+
             $studentLog -> clockinCount++;
             array_push($studentLog->clockinArr, $newClockin);
+            $studentLogArr[$name] = $studentLog;
         }
         // if a student with this name doesnt exist, create them
         else

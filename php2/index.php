@@ -1,14 +1,16 @@
 
 <style>
     .records { grid-area: records; }
-    .print_r { grid-area: print_r; }
+    .logs { grid-area: logs; overflow-y: scroll; overflow-x: hidden; }
     .arrivals { grid-area: arrivals; }
 
     .grid-container {
         display: grid;
         grid-template-areas:
-            'records print_r'
+            'records logs'
             'records arrivals';
+        grid-template-columns: 40% 55%;
+        grid-template-rows: 50vh 25vh;
         gap: 30px;
         padding: 10px;
         }

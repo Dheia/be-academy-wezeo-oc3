@@ -61,7 +61,7 @@ function displayLogs($arrivalsInstance)
     $jsonStr = file_get_contents(Cst::STUDENT_LOG_FILE);
     $studentLogArr = json_decode($jsonStr, true); 
 
-    
+    $studentLogArr = array_map('assocArrayToObject', $studentLogArr);
 
     echo "<div class=\"grid-container\">";
     
@@ -73,7 +73,7 @@ function displayLogs($arrivalsInstance)
         echo "<ul>";
         
         // nested list of every individual clockin
-        foreach ($log->clockins as $clockin) 
+        foreach ($log->clockinArr as $clockin) 
         {
             echo "<li>";
             echo $clockin->date . " " . $clockin->time . " " . $clockin->message;
@@ -85,9 +85,10 @@ function displayLogs($arrivalsInstance)
     }
     echo "</ul>";
 
-    echo "<div class=\"print_r\">";
-    echo "<h2>print_r(studenti.json):</h2>";
-    echo print_r($studentLogArr);
+    echo "<div class=\"logs\">";
+    echo "<h2>studenti.json:</h2>";
+    $str = json_encode($studentLogArr, JSON_PRETTY_PRINT);
+    echo "<pre>" . $str . "</pre>";
     echo "</div>";
 
     echo "<div class=\"arrivals\">";
@@ -96,6 +97,14 @@ function displayLogs($arrivalsInstance)
     echo "</div>";
 
     echo "</div>";
+}
+
+// This function takes an associative array and attempts to 
+// convert it to an object
+function assocArrayToObject($assocArr) 
+{
+    $jsonStr = json_encode($assocArr);
+    return json_decode($jsonStr, false);
 }
 
 ?>

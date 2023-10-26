@@ -1,0 +1,20 @@
+# ===================================
+#  Column Definitions
+# ===================================
+
+columns:
+    code:
+        label: Code
+        sortable: false
+        type: partial
+        path: column_code
+
+    version:
+        label: Version
+        sortable: false
+
+    is_enabled:
+        label: Enabled
+        type: partial
+        path: is_enabled
+        sortable: false

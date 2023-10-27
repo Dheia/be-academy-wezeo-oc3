@@ -1,0 +1,18 @@
+columns:
+    name:
+        label: Name
+        type: text
+        searchable: true
+        sortable: true
+    message:
+        label: Message
+        type: text
+    date_time:
+        label: Clockin
+        type: datetime
+        default: '0'
+    is_late:
+        label: 'Late?'
+        type: switch
+        default: '1'
+        searchable: true

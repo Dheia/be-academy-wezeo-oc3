@@ -1,0 +1,11 @@
+plugin:
+    name: 'pavolp.apparrivals::lang.plugin.name'
+    description: 'pavolp.apparrivals::lang.plugin.description'
+    author: 'pavol p'
+    icon: oc-icon-database
+    homepage: ''
+navigation:
+    main-menu-item:
+        label: Arrivals
+        url: pavolp/apparrivals/arrivals
+        icon: icon-list-ol

@@ -1,0 +1,9 @@
+fields:
+    name:
+        label: Name
+        span: full
+        type: text
+    message:
+        label: Message
+        span: full
+        type: text

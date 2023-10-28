@@ -1,14 +1,32 @@
 description = "Navigation bar"
+
+[session]
+security = "all"
+redirect = "home"
+checkToken = 0
 ==
 <section id="navbar" class="m-b-3">
 	<nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
 		<div class="container">
-			<a class="navbar-brand" href="{{ 'features'|page }}">Logger</a>
+			<a class="navbar-brand" href="{{ 'home'|page }}">Logger</a>
 			<ul class="nav navbar-nav pull-xs-right">
-				
+
                 <li class="nav-item{{ this.page.baseFileName == 'features' ? ' active' }}">
 					<a class="nav-link" href="{{ 'home'|page }}">Home</a>
 				</li>
+
+                <li class="nav-item{{ this.page.baseFileName == 'features' ? ' active' }}">
+					<a class="nav-link" href="{{ 'features'|page }}">Author</a>
+				</li>
+
+                {% if user %}
+
+                <li class="nav-item{{ this.page.baseFileName == 'features' ? ' active' }}">
+					<a class="nav-link" data-request="onLogout" data-request-data="redirect: '/'" >Log out</a>
+				</li>
+                {% else %}
+                
+                {% endif %}
 
 			</ul>
 		</div>

@@ -1,5 +1,0 @@
-v1.0.1:
-    - 'Initialize plugin'
-v1.0.2:
-    - 'Created table pavolp_apparrivals_'
-    - builder_table_create_pavolp_apparrivals_.php

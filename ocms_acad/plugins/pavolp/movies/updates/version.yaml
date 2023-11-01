@@ -1,0 +1,5 @@
+v1.0.1:
+    - 'Initialize plugin'
+v1.0.2:
+    - 'Created table pavolp_movies_'
+    - builder_table_create_pavolp_movies_.php

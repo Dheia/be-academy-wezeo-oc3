@@ -1,0 +1,6 @@
+plugin:
+    name: 'app.arrival::lang.plugin.name'
+    description: 'app.arrival::lang.plugin.description'
+    author: 'pavol p'
+    icon: oc-icon-globe
+    homepage: ''

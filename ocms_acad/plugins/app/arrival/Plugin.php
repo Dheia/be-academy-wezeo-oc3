@@ -15,12 +15,6 @@ class Plugin extends PluginBase
      */
     public function pluginDetails()
     {
-        return [
-            'name' => 'Arrival',
-            'description' => 'Plugin for tracking arrivals',
-            'author' => 'App',
-            'icon' => 'icon-camera-cctv'
-        ];
     }
 
     /**
@@ -44,11 +38,6 @@ class Plugin extends PluginBase
      */
     public function registerComponents()
     {
-        return []; // Remove this line to activate
-
-        return [
-            'App\Arrival\Components\MyComponent' => 'myComponent',
-        ];
     }
 
     /**
@@ -56,14 +45,6 @@ class Plugin extends PluginBase
      */
     public function registerPermissions()
     {
-        return []; // Remove this line to activate
-
-        return [
-            'app.arrival.some_permission' => [
-                'tab' => 'Arrival',
-                'label' => 'Some permission'
-            ],
-        ];
     }
 
     /**
@@ -71,16 +52,5 @@ class Plugin extends PluginBase
      */
     public function registerNavigation()
     {
-        return []; // Remove this line to activate
-
-        return [
-            'arrival' => [
-                'label' => 'Arrival',
-                'url' => Backend::url('app/arrival/mycontroller'),
-                'icon' => 'icon-leaf',
-                'permissions' => ['app.arrival.*'],
-                'order' => 500,
-            ],
-        ];
     }
 }

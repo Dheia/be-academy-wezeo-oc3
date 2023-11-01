@@ -1,0 +1,14 @@
+fields:
+    name:
+        label: 'Movie name'
+        span: full
+        type: text
+    year:
+        label: 'Release year'
+        span: full
+        type: text
+    description:
+        label: Description
+        size: ''
+        span: full
+        type: richeditor

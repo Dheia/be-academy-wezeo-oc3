@@ -1,8 +1,21 @@
-# ===================================
-#  List Column Definitions
-# ===================================
-
 columns:
-    id:
-        label: ID
+    name:
+        label: 'Name of student'
+        type: string
         searchable: true
+        sortable: true
+    date:
+        label: 'Date of arrival'
+        type: text
+        searchable: true
+        sortable: true
+    time:
+        label: 'Time of arrival'
+        type: text
+        searchable: false
+        sortable: false
+    message:
+        label: 'Message'
+        type: text
+        searchable: false
+        sortable: false

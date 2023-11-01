@@ -1,8 +1,17 @@
-# ===================================
-#  Form Field Definitions
-# ===================================
-
 fields:
-    id:
-        label: ID
-        disabled: true
+    name:
+        label: 'Name of student'
+        type: text
+        span: full
+    date:
+        label: 'Date of arrival'
+        type: text
+        span: full
+    time:
+        label: 'Time of arrival'
+        type: text
+        span: full
+    message:
+        label: 'Message'
+        type: richeditor
+        span: full

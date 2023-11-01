@@ -1,0 +1,11 @@
+columns:
+    name:
+        label: 'Name of movie'
+        type: text
+        searchable: true
+        sortable: true
+    year:
+        label: 'Released when'
+        type: number
+        searchable: false
+        sortable: true

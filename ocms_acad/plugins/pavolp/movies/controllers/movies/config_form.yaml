@@ -1,0 +1,11 @@
+name: Movies
+modelClass: PavolP\Movies\Models\Movie
+form: $/pavolp/movies/models/movie/fields.yaml
+defaultRedirect: pavolp/movies/movies
+create:
+    redirect: 'pavolp/movies/movies/update/:id'
+    redirectClose: pavolp/movies/movies
+update:
+    redirect: pavolp/movies/movies
+    redirectClose: pavolp/movies/movies
+preview: {  }

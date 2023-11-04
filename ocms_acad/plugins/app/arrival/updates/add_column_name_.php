@@ -1,5 +1,6 @@
 <?php namespace App\Arrival\Updates;
 
+use Backend\Classes\Controller;
 use Schema;
 use October\Rain\Database\Updates\Migration;
 

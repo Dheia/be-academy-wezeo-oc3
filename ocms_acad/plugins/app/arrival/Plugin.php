@@ -10,12 +10,6 @@ use System\Classes\PluginBase;
  */
 class Plugin extends PluginBase
 {
-    /**
-     * pluginDetails about this plugin.
-     */
-    public function pluginDetails()
-    {
-    }
 
     /**
      * register method, called when the plugin is first registered.
@@ -41,16 +35,11 @@ class Plugin extends PluginBase
     }
 
     /**
-     * registerPermissions used by the backend.
+     * registerSettings used by the backend.
      */
-    public function registerPermissions()
+    public function registerSettings()
     {
     }
 
-    /**
-     * registerNavigation used by the backend.
-     */
-    public function registerNavigation()
-    {
-    }
+
 }

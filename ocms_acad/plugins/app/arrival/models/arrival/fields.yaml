@@ -3,15 +3,23 @@ fields:
         label: 'Name of student'
         type: text
         span: full
+        required: true
     date:
         label: 'Date of arrival'
-        type: text
+        type: datepicker
+        mode: date
+        format: d/m/Y
         span: full
+        required: true
     time:
         label: 'Time of arrival'
-        type: text
+        type: datepicker
+        mode: time
+        format: H:i:s
         span: full
+        required: true
     message:
         label: 'Message'
-        type: richeditor
+        type: textarea
         span: full
+        required: false

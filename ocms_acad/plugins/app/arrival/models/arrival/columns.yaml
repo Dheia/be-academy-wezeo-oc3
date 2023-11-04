@@ -1,19 +1,21 @@
 columns:
     name:
         label: 'Name of student'
-        type: string
+        type: text
         searchable: true
         sortable: true
     date:
         label: 'Date of arrival'
-        type: text
+        type: datetime
+        format: d/m/Y
         searchable: true
         sortable: true
     time:
         label: 'Time of arrival'
-        type: text
-        searchable: false
-        sortable: false
+        type: datetime
+        format: h:i:s
+        searchable: true
+        sortable: true
     message:
         label: 'Message'
         type: text

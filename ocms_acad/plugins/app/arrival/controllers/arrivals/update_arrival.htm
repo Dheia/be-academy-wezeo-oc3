@@ -1,0 +1,25 @@
+<script>
+    var prevent = false;
+    $("button").focus(function() {
+    prevent = true;
+    }).blur(function() {
+    prevent = false;
+    });
+
+    $("button").submit(function() {
+    if (prevent) {
+        return false;
+    }
+    });
+</script>
+
+<?= Form::open() ?>
+
+<?= $formWidget->render() ?>
+
+<button data-request="onClickUpdate">Insert</button>
+
+<?= Form::close() ?> 
+<!-- the Form::open/close tags are used to capture data that the user inputs in that form-->
+
+

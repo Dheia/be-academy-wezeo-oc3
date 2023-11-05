@@ -19,53 +19,43 @@ class Arrivals extends Controller
         // if you dont RETURN anything here, its gonna return the index.htm file in the views directory
 
         $config = $this->makeConfig('$/app/arrival/models/arrival/columns.yaml');
-
         $config->model = new \App\Arrival\Models\Arrival;
-
         $widget = $this->makeWidget('Backend\Widgets\Lists', $config);
-
+        $widget->bindToController();
+        $widget->recordUrl = 'app/arrival/arrivals/update_arrival/:id';
         $this->vars['listWidget'] = $widget;
     }
 
-    public function onRedirectToUpdate() {
+    // TODO: Apply a consistent style! Some methods are snake_case and some camelCase!!!
 
-        // redirects the user to the update_arrival view
+    public function onRedirectToInsert() {
 
-        return \Backend::redirect('app/arrival/arrivals/update_arrival');
+        // redirects the user to the insert_arrival view
+
+        return \Backend::redirect('app/arrival/arrivals/insert_arrival');
     }
 
-    // without this method, the redirect in index_onInsert would not work
-    public function update_arrival() {
+    // without this method, the redirect in onRedirectToUpdate would not work.
+    // or maybe it would? either way, we need this method so we can create a 
+    // widget that we pass to the update_arrival view
+    public function insert_arrival() {
         $config = $this->makeConfig('$/app/arrival/models/arrival/fields.yaml');
         $config->model = new \App\Arrival\Models\Arrival;
-        
         $widget = $this->makeWidget('Backend\Widgets\Form', $config);
-    
         $this->vars['formWidget'] = $widget;
     }
 
-    public function onClickUpdate() {
+    public function update_arrival($id) {
+        
+        $config = $this->makeConfig('$/app/arrival/models/arrival/fields.yaml');
+        $config->model = \App\Arrival\Models\Arrival::find($id);
+        $widget = $this->makeWidget('Backend\Widgets\Form', $config);
+        $this->vars['formWidget'] = $widget;
+    }
+
+    public function onClickInsert() {
         
         $dataFromForm = post(); // all the form data is returned by post, basicaly the same as the superglobal $_POST
-        
-        //TODO: FINISH DATE AND TIME VALIDATION
-        /*if
-        (
-            !preg_match("/[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{1,4}/", $dataFromForm["date"])
-        ) {
-            \Flash::error("Invalid date. The correct format is dd/mm/yyyy");
-            return;
-        }
-
-        if
-        (
-            !strtotime($dataFromForm["time"]) 
-            || 
-            !preg_match("/(\d{1,2}):(\d{1,2})/", $dataFromForm["time"])
-        ) {
-            \Flash::error("Invalid time. The correct format is hh:mm");
-            return;
-        }*/
 
         $arrival = new Arrival;
         $arrival->name = $dataFromForm['name'];
@@ -75,5 +65,30 @@ class Arrivals extends Controller
         $arrival->save();
 
         \Flash::success("Added " . $dataFromForm['name']);
+    }
+
+    public function onClickUpdate($id) {
+
+        $dataFromForm = post(); // all the form data is returned by post, basicaly the same as the superglobal $_POST
+
+        $arrival = \App\Arrival\Models\Arrival::find($id);
+        $arrival->name = $dataFromForm['name'];
+        $arrival->date = $dataFromForm['date'];
+        $arrival->time = $dataFromForm['time'];
+        $arrival->message = $dataFromForm['message'];
+        $arrival->save();
+
+        \Flash::success("Updated " . $dataFromForm['name']);
+
+    }
+
+    public function onClickDelete($id) {
+        $model = \App\Arrival\Models\Arrival::find($id);
+        $name = $model->name;
+        $model->delete();
+
+        \Flash::success("Deleted " . $name);
+
+        return \Backend::redirect('app/arrival/arrivals/index');
     }
 }

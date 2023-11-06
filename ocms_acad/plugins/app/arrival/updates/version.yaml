@@ -1,7 +1,7 @@
 v1.0.1: 
     - 'First version of the arrival app'
 v1.0.2: 
-    - 'Created table arr_arrival_'
+    - 'Created table app_arrival_'
     - table_create_app_arrival_.php
 v1.0.3:
     - 'Added name column'

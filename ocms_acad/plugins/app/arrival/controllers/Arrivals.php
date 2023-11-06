@@ -14,47 +14,44 @@ class Arrivals extends Controller
         BackendMenu::setContext('App.Arrival', 'main-menu-item', );
     }
 
-    // the function called when you click on this plugin's button on the upper backend panel
-    public function index() {
-        // if you dont RETURN anything here, its gonna return the index.htm file in the views directory
-
+    // Shows the list of all arrivals
+    public function index() 
+    {
         $config = $this->makeConfig('$/app/arrival/models/arrival/columns.yaml');
         $config->model = new \App\Arrival\Models\Arrival;
         $widget = $this->makeWidget('Backend\Widgets\Lists', $config);
         $widget->bindToController();
-        $widget->recordUrl = 'app/arrival/arrivals/update_arrival/:id';
+        $widget->recordUrl = 'app/arrival/arrivals/updatearrival/:id';
         $this->vars['listWidget'] = $widget;
     }
 
-    // TODO: Apply a consistent style! Some methods are snake_case and some camelCase!!!
-
-    public function onRedirectToInsert() {
-
-        // redirects the user to the insert_arrival view
-
-        return \Backend::redirect('app/arrival/arrivals/insert_arrival');
+    // Called upon clicking on the "Insert new student" button on the index page
+    public function onRedirectToInsert() 
+    {
+        return \Backend::redirect('app/arrival/arrivals/insertarrival');
     }
 
-    // without this method, the redirect in onRedirectToUpdate would not work.
-    // or maybe it would? either way, we need this method so we can create a 
-    // widget that we pass to the update_arrival view
-    public function insert_arrival() {
+    // Shows a form for inserting a new arrival
+    public function insertArrival()
+    {
         $config = $this->makeConfig('$/app/arrival/models/arrival/fields.yaml');
         $config->model = new \App\Arrival\Models\Arrival;
         $widget = $this->makeWidget('Backend\Widgets\Form', $config);
         $this->vars['formWidget'] = $widget;
     }
 
-    public function update_arrival($id) {
-        
+    // Shows a form for updating an existing arrival
+    public function updateArrival($id) 
+    {    
         $config = $this->makeConfig('$/app/arrival/models/arrival/fields.yaml');
         $config->model = \App\Arrival\Models\Arrival::find($id);
         $widget = $this->makeWidget('Backend\Widgets\Form', $config);
         $this->vars['formWidget'] = $widget;
     }
 
-    public function onClickInsert() {
-        
+    // Called by the "Insert" button when viewing the insertArrival page
+    public function onClickInsert()
+    {    
         $dataFromForm = post(); // all the form data is returned by post, basicaly the same as the superglobal $_POST
 
         $arrival = new Arrival;
@@ -67,9 +64,10 @@ class Arrivals extends Controller
         \Flash::success("Added " . $dataFromForm['name']);
     }
 
-    public function onClickUpdate($id) {
-
-        $dataFromForm = post(); // all the form data is returned by post, basicaly the same as the superglobal $_POST
+    // Called by the "Update" button when viewing the updateArrival page
+    public function onClickUpdate($id)
+    {
+        $dataFromForm = post(); 
 
         $arrival = \App\Arrival\Models\Arrival::find($id);
         $arrival->name = $dataFromForm['name'];
@@ -79,10 +77,11 @@ class Arrivals extends Controller
         $arrival->save();
 
         \Flash::success("Updated " . $dataFromForm['name']);
-
     }
 
-    public function onClickDelete($id) {
+    // Called by the "Delete" button when viewing the updateArrival page
+    public function onClickDelete($id)
+    {
         $model = \App\Arrival\Models\Arrival::find($id);
         $name = $model->name;
         $model->delete();

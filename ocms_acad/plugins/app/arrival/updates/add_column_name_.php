@@ -8,17 +8,17 @@ class AddColumnName extends Migration
 {
     public function up()
     {
-		Schema::table('app_arrival_', function ($table) {
-			$table->string('name');
-		});
-
+      Schema::table('app_arrival_', function ($table)
+      {
+        $table->string('name');
+      });
     }
     
     public function down()
     {
-        Schema::table('app_arrival_', function ($table) {
-			$table->dropColumn('name');
-		});
-
+      Schema::table('app_arrival_', function ($table)
+      {
+        $table->dropColumn('name');
+      });
     }
 }

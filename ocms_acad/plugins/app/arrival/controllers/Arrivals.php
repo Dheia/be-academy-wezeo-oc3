@@ -5,6 +5,8 @@ use Backend;
 use BackendMenu;
 use Backend\Classes\Controller;
 use Flash;
+use Seld\PharUtils\Timestamps;
+use October\Rain\Exception\ValidationException ;
 
 class Arrivals extends Controller
 {
@@ -14,15 +16,27 @@ class Arrivals extends Controller
         BackendMenu::setContext('App.Arrival', 'main-menu-item', );
     }
 
+    public $implement = [
+        \Backend\Behaviors\FormController::class,
+        \Backend\Behaviors\ListController::class
+    ];
+
+    public $listConfig = 'config_list.yaml';
+    public $formConfig = 'config_form.yaml';
+
     // Shows the list of all arrivals
-    public function index() 
+    public function index()
     {
-        $config = $this->makeConfig('$/app/arrival/models/arrival/columns.yaml');
-        $config->model = new \App\Arrival\Models\Arrival;
-        $widget = $this->makeWidget('Backend\Widgets\Lists', $config);
-        $widget->bindToController();
-        $widget->recordUrl = 'app/arrival/arrivals/updatearrival/:id';
-        $this->vars['listWidget'] = $widget;
+        // $config = $this->makeConfig('$/app/arrival/models/arrival/columns.yaml');
+        // $config->model = new \App\Arrival\Models\Arrival;
+
+        //$widget = $this->makeWidget('Backend\Widgets\Lists', $config);
+        //$widget->bindToController();
+        //$widget->recordUrl = 'app/arrival/arrivals/updatearrival/:id';
+        //$widget->showCheckboxes = true;
+        //$this->vars['listWidget'] = $widget;
+
+        $this->asExtension('ListController')->index();
     }
 
     // Called upon clicking on the "Insert new student" button on the index page
@@ -54,10 +68,33 @@ class Arrivals extends Controller
     {    
         $dataFromForm = post(); // all the form data is returned by post, basicaly the same as the superglobal $_POST
 
+        $date = 0;
+        $time = 0;
+
+        $timestamp = strtotime($dataFromForm['datetime']);
+
+        if (!$timestamp)
+        {
+            \Flash::error("Invalid date");
+            return;   
+        }
+        // The weird thing is, if you input an invalid date, the form sends the string "Invalid date".
+        // However, if you type an invalid time, it just converts it to 0:00
+        $date = date('d/m/Y', $timestamp);
+        $time = date('h/i/s', $timestamp);
+        
+        // if (!$timestamp)
+        // {
+        //     \Flash::error("Invalid date or time. Received date and time: " . $dataFromForm["datetime"]);
+        //     return;
+        // }
+        // $date = date('d/m/Y', $timestamp);  
+        // $time = date('h:i:s', $timestamp);
+
         $arrival = new Arrival;
         $arrival->name = $dataFromForm['name'];
-        $arrival->date = $dataFromForm['date'];
-        $arrival->time = $dataFromForm['time'];
+        $arrival->date = $date;
+        $arrival->time = $time;
         $arrival->message = $dataFromForm['message'];
         $arrival->save();
 
@@ -89,5 +126,32 @@ class Arrivals extends Controller
         \Flash::success("Deleted " . $name);
 
         return \Backend::redirect('app/arrival/arrivals/index');
+    }
+
+    public function onMultiDelete() {
+        
+    }
+
+    private function IsDateValid($date)
+    {
+        // The received date will be in the format "yyyy-mm-dd hh:mm:ss", despite having set
+        // the mode in the field.yaml file to "date" and not "datetime"
+        // (This is a bug in ocms)
+
+        $timestamp = strtotime($date);
+        if (!$timestamp)
+        {
+            return false;
+        }
+
+        $onlyDate = date('d/m/Y', $timestamp);
+        \Flash::success("@" . $onlyDate . "@");
+        $pattern = "#13/11/2000#";
+        return preg_match($pattern, $date);
+    }
+
+    private function IsTimeValid($time) 
+    {
+        return true;
     }
 }

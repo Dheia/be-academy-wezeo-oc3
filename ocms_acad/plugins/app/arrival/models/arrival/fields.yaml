@@ -2,24 +2,17 @@ fields:
     name:
         label: 'Name of student'
         type: text
-        span: full
+        span: left
         required: true
-    date:
-        label: 'Date of arrival'
+    datetime:
+        label: 'Date and time of arrival'
         type: datepicker
-        mode: date
+        mode: datetime
         format: d/m/Y
-        span: full
-        required: true
-    time:
-        label: 'Time of arrival'
-        type: datepicker
-        mode: time
-        format: H:i:s
-        span: full
+        span: left
         required: true
     message:
         label: 'Message'
         type: textarea
-        span: full
+        span: left
         required: false

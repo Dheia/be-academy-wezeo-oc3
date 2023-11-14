@@ -1,0 +1,14 @@
+
+# Model List Column configuration
+list: $/app/arrival/models/arrival/columns.yaml
+
+modelClass: \App\Arrival\Models\Arrival
+
+recordUrl: app/arrival/arrivals/updatearrival/:id
+
+showCheckboxes: true
+
+toolbar:
+    buttons: list_toolbar
+    search:
+        prompt: Find records

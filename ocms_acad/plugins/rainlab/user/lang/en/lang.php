@@ -13,7 +13,7 @@ return [
     'users' => [
         'menu_label' => 'Users',
         'all_users' => 'All Users',
-        'new_user' => 'New User',
+        'new_user' => 'New Schmoozer',
         'list_title' => 'Manage Users',
         'trashed_hint_title' => 'User has deactivated their account',
         'trashed_hint_desc' => 'This user has deactivated their account and no longer wants to appear on the site. They can restore their account at any time by signing back in.',

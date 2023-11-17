@@ -1,1 +1,22 @@
-form: 
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Model Form Field configuration
+form: $/app/arrival/models/arrival/fields.yaml
+
+# Model Class name
+modelClass: App\Arrival\Models\Arrival
+
+# Default redirect location
+defaultRedirect: arr/arrival/arrival
+
+# Create page
+# create:
+#     redirect: app/arrival/arrivals/preview/:id
+#     redirectClose: app/arrival/arrivals
+
+# Update page
+#update:
+#    redirect: rainlab/user/users/update/:id
+#    redirectClose: rainlab/user/users/preview/:id

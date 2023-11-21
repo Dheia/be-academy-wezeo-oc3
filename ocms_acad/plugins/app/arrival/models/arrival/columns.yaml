@@ -6,13 +6,13 @@ columns:
         sortable: true
     date:
         label: 'Date of arrival'
-        type: datetime
+        type: date
         format: d/m/Y
         searchable: true
         sortable: true
     time:
         label: 'Time of arrival'
-        type: datetime
+        type: time
         format: h:i:s
         searchable: true
         sortable: true

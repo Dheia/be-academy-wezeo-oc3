@@ -40,6 +40,8 @@ class Arrivals extends Controller
         // $widget->showCheckboxes = true;
         // $this->vars['listWidget'] = $widget;
         
+        $this->addJs('/plugins/rainlab/user/assets/js/bulk-actions.js');
+
         $this->asExtension('ListController')->index();
     }
 
@@ -63,28 +65,21 @@ class Arrivals extends Controller
     {    
         $dataFromForm = post(); // all the form data is returned by post, basicaly the same as the superglobal $_POST
 
-        $date = 0;
-        $time = 0;
-
-        $timestamp = strtotime($dataFromForm['datetime']);
-
-        if (!$timestamp)
+        $dateTimestamp = strtotime($dataFromForm['date']);
+        if (!$dateTimestamp)
         {
             \Flash::error("Invalid date");
-            return;   
+            return;
         }
-        // The weird thing is, if you input an invalid date, the form sends the string "Invalid date".
-        // However, if you type an invalid time, it just converts it to 0:00
-        $date = date('d/m/Y', $timestamp);
-        $time = date('h/i/s', $timestamp);
+        $date = date("d/m/Y", $dateTimestamp) . " 00:00:00"; // need to add the time or otherwise the list widget doesnt work 
         
-        // if (!$timestamp)
-        // {
-        //     \Flash::error("Invalid date or time. Received date and time: " . $dataFromForm["datetime"]);
-        //     return;
-        // }
-        // $date = date('d/m/Y', $timestamp);  
-        // $time = date('h:i:s', $timestamp);
+        $timeTimestamp = strtotime($dataFromForm['time']);
+        if (!$timeTimestamp)
+        {
+            \Flash::error("Invalid time");
+            return;
+        }
+        $time = "1/1/1970 " . date("h:i:s", $timeTimestamp); // need to add the date or otherwise the list widget doesnt work 
 
         $arrival = new Arrival;
         $arrival->name = $dataFromForm['name'];
@@ -123,38 +118,41 @@ class Arrivals extends Controller
         return \Backend::redirect('app/arrival/arrivals/index');
     }
 
-    public function onMultiDelete() {
-        
+    public function onDeleteMultiple()
+    {
+        if (
+            ($bulkAction = post('action')) &&
+            ($checkedIds = post('checked')) &&
+            is_array($checkedIds) &&
+            count($checkedIds)
+        ) {
+
+            foreach ($checkedIds as $id) {
+                if (!$arrival = Arrival::withTrashed()->find($id)) {
+                    continue;
+                }
+                $arrival->forceDelete();
+                break;
+            }
+
+            Flash::success("Succesfully deleted");
+        }
+        else {
+            Flash::error("error");
+        }
+
+        return $this->listRefresh();
     }
 
     // Called upon clicking on the "Insert new student" button on the index page
-    public function onRedirectToInsert() 
+    public function onRedirectToInsert()
     {
         return \Backend::redirect('app/arrival/arrivals/insertarrival');
     }
 
-    private function IsDateValid($date)
-    {
-        // The received date will be in the format "yyyy-mm-dd hh:mm:ss", despite having set
-        // the mode in the field.yaml file to "date" and not "datetime"
-        // (This is a bug in ocms)
 
-        $timestamp = strtotime($date);
-        if (!$timestamp)
-        {
-            return false;
-        }
 
-        $onlyDate = date('d/m/Y', $timestamp);
-        \Flash::success("@" . $onlyDate . "@");
-        $pattern = "#13/11/2000#";
-        return preg_match($pattern, $date);
-    }
-
-    private function IsTimeValid($time) 
-    {
-        return true;
-    }
+    
     #region old
     // public function __construct()
     // {

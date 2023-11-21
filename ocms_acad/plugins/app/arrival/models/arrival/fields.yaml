@@ -4,11 +4,18 @@ fields:
         type: text
         span: left
         required: true
-    datetime:
-        label: 'Date and time of arrival'
+    date:
+        label: 'Date of arrival'
         type: datepicker
-        mode: datetime
+        mode: date
         format: d/m/Y
+        span: left
+        required: true
+    time:
+        label: 'Time of arrival'
+        type: datepicker
+        mode: time
+        format: h:i:s
         span: left
         required: true
     message:
